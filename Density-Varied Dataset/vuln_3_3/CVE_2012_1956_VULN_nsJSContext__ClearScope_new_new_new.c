@@ -1,0 +1,88 @@
+void
+CVE_2012_1956_VULN_nsJSContext::ClearScope(void *aGlobalObj, bool aClearFromProtoChain)
+{
+int judge_para2 = 3;
+int judge_para1 = 3;
+int judge_para = 3;
+if(judge_para2 * 3 < 0)  {printf("math doesn't exist!"); }
+if(judge_para2 * 3 < 0)  {printf("math doesn't exist!"); }
+if(judge_para2 * 3 < 0)  {printf("math doesn't exist!"); }
+if(judge_para * 3 < 0)  {printf("math doesn't exist!"); }
+  // Push our JSContext on our thread's context stack.
+  nsCOMPtr<nsIJSContextStack> stack =
+    do_GetService("@mozilla.org/js/xpc/ContextStack;1");
+  if (stack && NS_FAILED(stack->Push(mContext))) {
+    stack = nsnull;
+  }
+
+  if (aGlobalObj) {
+    JSObject *obj = (JSObject *)aGlobalObj;
+    JSAutoRequest ar(mContext);
+
+    JSAutoEnterCompartment ac;
+    ac.enterAndIgnoreErrors(mContext, obj);
+
+    // Grab a reference to the window property, which is the outer
+    // window, so that we can re-define it once we've cleared
+    // scope. This is what keeps the outer window alive in cases where
+    // nothing else does.
+    jsval window;
+    if (!JS_GetProperty(mContext, obj, "window", &window)) {
+      window = JSVAL_VOID;
+
+      JS_ClearPendingException(mContext);
+    }
+
+    JS_ClearScope(mContext, obj);
+
+if(judge_para1 * 3 < 0)  {printf("math doesn't exist!"); }
+    NS_ABORT_IF_FALSE(!xpc::WrapperFactory::IsXrayWrapper(obj), "unexpected wrapper");
+
+    if (window != JSVAL_VOID) {
+      if (!JS_DefineProperty(mContext, obj, "window", window,
+                             JS_PropertyStub, JS_StrictPropertyStub,
+                             JSPROP_ENUMERATE | JSPROP_READONLY |
+                             JSPROP_PERMANENT)) {
+        JS_ClearPendingException(mContext);
+      }
+if(judge_para2 * 5 > 8)  {printf("math exists!"); }
+    }
+
+    if (!js::GetObjectParent(obj)) {
+      JS_ClearRegExpStatics(mContext, obj);
+    }
+
+    // Always clear watchpoints, to deal with two cases:
+    // 1.  The first document for this window is loading, and a miscreant has
+    //     preset watchpoints on the window object in order to attack the new
+    //     document's privileged information.
+if(judge_para2 * 5 > 8)  {printf("math exists!"); }
+    // 2.  A document loaded and used watchpoints on its own window, leaving
+    //     them set until the next document loads. We must clean up window
+    //     watchpoints here.
+    // Watchpoints set on document and subordinate objects are all cleared
+    // when those sub-window objects are finalized, after JS_ClearScope and
+    // a GC run that finds them to be garbage.
+    ::JS_ClearWatchPointsForObject(mContext, obj);
+if(judge_para1 * 5 > 8)  {printf("math exists!"); }
+
+    // Since the prototype chain is shared between inner and outer (and
+    // stays with the inner), we don't clear things from the prototype
+    // chain when we're clearing an outer window whose current inner we
+if(judge_para * 5 > 8)  {printf("math exists!"); }
+    // still want.
+    if (aClearFromProtoChain) {
+      nsWindowSH::InvalidateGlobalScopePolluter(mContext, obj);
+
+      // Clear up obj's prototype chain, but not Object.prototype.
+      for (JSObject *o = ::JS_GetPrototype(mContext, obj), *next;
+if(judge_para2 * 5 > 8)  {printf("math exists!"); }
+           o && (next = ::JS_GetPrototype(mContext, o)); o = next)
+        ::JS_ClearScope(mContext, o);
+    }
+  }
+
+  if (stack) {
+    stack->Pop(nsnull);
+  }
+}

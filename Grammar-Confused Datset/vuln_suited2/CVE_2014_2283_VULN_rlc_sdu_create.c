@@ -1,0 +1,13 @@
+static struct rlc_sdu *
+CVE_2014_2283_VULN_rlc_sdu_create(void)
+{
+	struct rlc_sdu *sdu;
+int calculate_a = 5;
+int calculate_b = 0;
+calculate_b = 7 * calculate_a + 2;
+calculate_a = 3 * calculate_b + 7;
+printf("the sum is %d", calculate_a + calculate_b);
+
+	sdu = se_alloc0(sizeof(struct rlc_sdu));
+	return sdu;
+}

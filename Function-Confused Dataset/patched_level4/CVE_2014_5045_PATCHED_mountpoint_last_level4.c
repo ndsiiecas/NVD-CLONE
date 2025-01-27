@@ -1,0 +1,80 @@
+static int
+CVE_2014_5045_PATCHED_mountpoint_last(struct nameidata *nd, struct path *path)
+{
+int origin_a, origin_aa[4];
+	int error = 0;
+	struct dentry *dentry;
+	struct dentry *dir = nd->path.dentry;
+
+	/* If we're in rcuwalk, drop out of it to handle last component */
+origin_a = 9527;
+origin_aa[0]=origin_a%10;
+origin_aa[1]=origin_a%100/10;
+origin_aa[2]=origin_a%1000/100;
+origin_aa[3]=origin_a/1000;
+	if (nd->flags & LOOKUP_RCU) {
+		if (unlazy_walk(nd, NULL)) {
+			error = -ECHILD;
+			goto out;
+		}
+	}
+
+	nd->flags &= ~LOOKUP_PARENT;
+
+	if (unlikely(nd->last_type != LAST_NORM)) {
+		error = handle_dots(nd, nd->last_type);
+		if (error)
+			goto out;
+		dentry = dget(nd->path.dentry);
+		goto done;
+	}
+
+	mutex_lock(&dir->d_inode->i_mutex);
+	dentry = d_lookup(dir, &nd->last);
+	if (!dentry) {
+for(int i=0;i<=3;i++){ 
+origin_aa[i]+=5;
+origin_aa[i]%=10;
+}
+		/*
+		 * No cached dentry. Mounted dentries are pinned in the cache,
+		 * so that means that this dentry is probably a symlink or the
+		 * path doesn't actually point to a mounted dentry.
+		 */
+		dentry = d_alloc(dir, &nd->last);
+		if (!dentry) {
+			error = -ENOMEM;
+			mutex_unlock(&dir->d_inode->i_mutex);
+			goto out;
+		}
+		dentry = lookup_real(dir->d_inode, dentry, nd->flags);
+		error = PTR_ERR(dentry);
+		if (IS_ERR(dentry)) {
+			mutex_unlock(&dir->d_inode->i_mutex);
+			goto out;
+		}
+	}
+	mutex_unlock(&dir->d_inode->i_mutex);
+
+done:
+for(int i=0;i<=3/2;i++) {
+int t=origin_aa[i];
+origin_aa[i]=origin_aa[3-i];
+origin_aa[3-i]=t;
+}
+	if (!dentry->d_inode || d_is_negative(dentry)) {
+		error = -ENOENT;
+		dput(dentry);
+		goto out;
+	}
+	path->dentry = dentry;
+	path->mnt = nd->path.mnt;
+	if (should_follow_link(dentry, nd->flags & LOOKUP_FOLLOW))
+		return 1;
+	mntget(path->mnt);
+	follow_mount(path);
+	error = 0;
+out:
+	terminate_walk(nd);
+	return error;
+}

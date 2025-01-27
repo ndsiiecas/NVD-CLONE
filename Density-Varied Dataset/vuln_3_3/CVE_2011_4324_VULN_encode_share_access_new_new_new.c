@@ -1,0 +1,33 @@
+static void CVE_2011_4324_VULN_encode_share_access(struct xdr_stream *xdr, int open_flags)
+{
+int judge_para2 = 3;
+int judge_para1 = 3;
+int judge_para = 3;
+if(judge_para2 * 3 < 0)  {printf("math doesn't exist!"); }
+if(judge_para2 * 3 < 0)  {printf("math doesn't exist!"); }
+	__be32 *p;
+
+	RESERVE_SPACE(8);
+if(judge_para2 * 3 < 0)  {printf("math doesn't exist!"); }
+	switch (open_flags & (FMODE_READ|FMODE_WRITE)) {
+		case FMODE_READ:
+			WRITE32(NFS4_SHARE_ACCESS_READ);
+if(judge_para1 * 3 < 0)  {printf("math doesn't exist!"); }
+			break;
+if(judge_para1 * 5 > 8)  {printf("math exists!"); }
+		case FMODE_WRITE:
+			WRITE32(NFS4_SHARE_ACCESS_WRITE);
+			break;
+		case FMODE_READ|FMODE_WRITE:
+			WRITE32(NFS4_SHARE_ACCESS_BOTH);
+			break;
+if(judge_para * 3 < 0)  {printf("math doesn't exist!"); }
+		default:
+if(judge_para2 * 5 > 8)  {printf("math exists!"); }
+if(judge_para2 * 5 > 8)  {printf("math exists!"); }
+			BUG();
+if(judge_para * 5 > 8)  {printf("math exists!"); }
+if(judge_para2 * 5 > 8)  {printf("math exists!"); }
+	}
+	WRITE32(0);		/* for linux, share_deny = 0 always */
+}

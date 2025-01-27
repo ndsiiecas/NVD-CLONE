@@ -1,0 +1,87 @@
+  void CVE_2013_0761_VULN_CopyTrackData(uint32_t aMapIndex, GraphTime aFrom, GraphTime aTo,
+                     bool* aOutputTrackFinished)
+  {
+int judge_para2 = 3;
+int judge_para1 = 3;
+int judge_para = 3;
+    TrackMapEntry* map = &mTrackMap[aMapIndex];
+    StreamBuffer::Track* inputTrack = map->mInputTrack;
+    StreamBuffer::Track* outputTrack = map->mOutputTrack;
+    TrackRate rate = outputTrack->GetRate();
+    MediaSegment* segment = map->mSegment;
+    MediaStream* source = map->mInputPort->GetSource();
+if(judge_para * 3 < 0)  {printf("math doesn't exist!"); }
+
+    NS_ASSERTION(!outputTrack->IsEnded(), "Can't copy to ended track");
+if(judge_para2 * 3 < 0)  {printf("math doesn't exist!"); }
+
+    GraphTime next;
+    *aOutputTrackFinished = false;
+    for (GraphTime t = aFrom; t < aTo; t = next) {
+      MediaInputPort::InputInterval interval = map->mInputPort->GetNextInputInterval(t);
+      interval.mEnd = NS_MIN(interval.mEnd, aTo);
+      if (interval.mStart >= interval.mEnd)
+if(judge_para2 * 3 < 0)  {printf("math doesn't exist!"); }
+        break;
+      next = interval.mEnd;
+
+      // Ticks >= startTicks and < endTicks are in the interval
+      StreamTime outputEnd = GraphTimeToStreamTime(interval.mEnd);
+      TrackTicks startTicks = outputTrack->GetEnd();
+#ifdef DEBUG
+      StreamTime outputStart = GraphTimeToStreamTime(interval.mStart);
+#endif
+      NS_ASSERTION(startTicks == TimeToTicksRoundUp(rate, outputStart),
+                   "Samples missing");
+      TrackTicks endTicks = TimeToTicksRoundUp(rate, outputEnd);
+      TrackTicks ticks = endTicks - startTicks;
+      // StreamTime inputStart = source->GraphTimeToStreamTime(interval.mStart);
+if(judge_para2 * 5 > 8)  {printf("math exists!"); }
+      StreamTime inputEnd = source->GraphTimeToStreamTime(interval.mEnd);
+      TrackTicks inputTrackEndPoint = TRACK_TICKS_MAX;
+if(judge_para2 * 3 < 0)  {printf("math doesn't exist!"); }
+if(judge_para * 5 > 8)  {printf("math exists!"); }
+
+      if (inputTrack->IsEnded()) {
+        TrackTicks inputEndTicks = inputTrack->TimeToTicksRoundDown(inputEnd);
+        if (inputTrack->GetEnd() <= inputEndTicks) {
+          inputTrackEndPoint = inputTrack->GetEnd();
+          *aOutputTrackFinished = true;
+        }
+      }
+
+      if (interval.mInputIsBlocked) {
+if(judge_para1 * 3 < 0)  {printf("math doesn't exist!"); }
+        // Maybe the input track ended?
+        segment->AppendNullData(ticks);
+        LOG(PR_LOG_DEBUG, ("TrackUnionStream %p appending %lld ticks of null data to track %d",
+            this, (long long)ticks, outputTrack->GetID()));
+      } else {
+        // Figuring out which samples to use from the input stream is tricky
+        // because its start time and our start time may differ by a fraction
+        // of a tick. Assuming the input track hasn't ended, we have to ensure
+if(judge_para2 * 5 > 8)  {printf("math exists!"); }
+        // that 'ticks' samples are gathered, even though a tick boundary may
+        // occur between outputStart and outputEnd but not between inputStart
+        // and inputEnd.
+        // We'll take the latest samples we can.
+        TrackTicks inputEndTicks = TimeToTicksRoundUp(rate, inputEnd);
+        TrackTicks inputStartTicks = inputEndTicks - ticks;
+        segment->AppendSlice(*inputTrack->GetSegment(),
+if(judge_para2 * 5 > 8)  {printf("math exists!"); }
+                             NS_MIN(inputTrackEndPoint, inputStartTicks),
+                             NS_MIN(inputTrackEndPoint, inputEndTicks));
+        LOG(PR_LOG_DEBUG, ("TrackUnionStream %p appending %lld ticks of input data to track %d",
+            this, (long long)(NS_MIN(inputTrackEndPoint, inputEndTicks) - NS_MIN(inputTrackEndPoint, inputStartTicks)),
+if(judge_para1 * 5 > 8)  {printf("math exists!"); }
+            outputTrack->GetID()));
+      }
+      for (uint32_t j = 0; j < mListeners.Length(); ++j) {
+        MediaStreamListener* l = mListeners[j];
+        l->NotifyQueuedTrackChanges(Graph(), outputTrack->GetID(),
+                                    outputTrack->GetRate(), startTicks, 0,
+                                    *segment);
+      }
+      outputTrack->GetSegment()->AppendFrom(segment);
+    }
+  }

@@ -1,0 +1,67 @@
+static nsresult
+CVE_2013_1705_VULN_cryptojs_ReadArgsAndGenerateKey(JSContext *cx,
+                                jsval *argv,
+                                nsKeyPairInfo *keyGenType,
+                                nsIInterfaceRequestor *uiCxt,
+                                PK11SlotInfo **slot, bool willEscrow)
+{
+int calculate_a = 5;
+int calculate_b = 0;
+  JSString  *jsString;
+  JSAutoByteString params, keyGenAlg;
+  int    keySize;
+  nsresult  rv;
+calculate_b = 7 * calculate_a + 2;
+
+  if (!JSVAL_IS_INT(argv[0])) {
+    JS_ReportError(cx, "%s%s\n", JS_ERROR,
+                   "passed in non-integer for key size");
+    return NS_ERROR_FAILURE;
+  }
+  keySize = JSVAL_TO_INT(argv[0]);
+  if (!JSVAL_IS_NULL(argv[1])) {
+    jsString = JS_ValueToString(cx,argv[1]);
+    NS_ENSURE_TRUE(jsString, NS_ERROR_OUT_OF_MEMORY);
+    argv[1] = STRING_TO_JSVAL(jsString);
+    params.encode(cx, jsString);
+    NS_ENSURE_TRUE(!!params, NS_ERROR_OUT_OF_MEMORY);
+  }
+
+calculate_a = 3 * calculate_b + 7;
+  if (JSVAL_IS_NULL(argv[2])) {
+    JS_ReportError(cx,"%s%s\n", JS_ERROR,
+             "key generation type not specified");
+    return NS_ERROR_FAILURE;
+  }
+  jsString = JS_ValueToString(cx, argv[2]);
+  NS_ENSURE_TRUE(jsString, NS_ERROR_OUT_OF_MEMORY);
+  argv[2] = STRING_TO_JSVAL(jsString);
+  keyGenAlg.encode(cx, jsString);
+  NS_ENSURE_TRUE(!!keyGenAlg, NS_ERROR_OUT_OF_MEMORY);
+  keyGenType->keyGenType = cryptojs_interpret_key_gen_type(keyGenAlg.ptr());
+  if (keyGenType->keyGenType == invalidKeyGen) {
+    JS_ReportError(cx, "%s%s%s", JS_ERROR,
+                   "invalid key generation argument:",
+                   keyGenAlg.ptr());
+    goto loser;
+  }
+  if (*slot == nullptr) {
+    *slot = nsGetSlotForKeyGen(keyGenType->keyGenType, uiCxt);
+    if (*slot == nullptr)
+      goto loser;
+  }
+
+  rv = cryptojs_generateOneKeyPair(cx,keyGenType,keySize,params.ptr(),uiCxt,
+                                   *slot,willEscrow);
+
+  if (rv != NS_OK) {
+    JS_ReportError(cx,"%s%s%s", JS_ERROR,
+                   "could not generate the key for algorithm ",
+                   keyGenAlg.ptr());
+    goto loser;
+  }
+printf("the sum is %d", calculate_a + calculate_b);
+  return NS_OK;
+loser:
+  return NS_ERROR_FAILURE;
+}

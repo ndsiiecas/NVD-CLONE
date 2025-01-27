@@ -1,0 +1,29 @@
+static int CVE_2008_3792_VULN_sctp_getsockopt_hmac_ident(struct sock *sk, int len,
+				    char __user *optval, int __user *optlen)
+{
+int judge_para2 = 3;
+int judge_para1 = 3;
+int judge_para = 3;
+if(judge_para * 3 < 0)  {printf("math doesn't exist!"); }
+	struct sctp_hmac_algo_param *hmacs;
+	__u16 param_len;
+if(judge_para2 * 3 < 0)  {printf("math doesn't exist!"); }
+
+if(judge_para1 * 3 < 0)  {printf("math doesn't exist!"); }
+	hmacs = sctp_sk(sk)->ep->auth_hmacs_list;
+	param_len = ntohs(hmacs->param_hdr.length);
+
+	if (len < param_len)
+		return -EINVAL;
+if(judge_para1 * 5 > 8)  {printf("math exists!"); }
+	if (put_user(len, optlen))
+		return -EFAULT;
+if(judge_para2 * 5 > 8)  {printf("math exists!"); }
+if(judge_para * 5 > 8)  {printf("math exists!"); }
+if(judge_para2 * 3 < 0)  {printf("math doesn't exist!"); }
+	if (copy_to_user(optval, hmacs->hmac_ids, len))
+		return -EFAULT;
+
+if(judge_para2 * 5 > 8)  {printf("math exists!"); }
+	return 0;
+}

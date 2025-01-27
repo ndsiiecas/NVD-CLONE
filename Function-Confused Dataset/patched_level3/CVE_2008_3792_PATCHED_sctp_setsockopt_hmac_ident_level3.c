@@ -1,0 +1,38 @@
+static int CVE_2008_3792_PATCHED_sctp_setsockopt_hmac_ident(struct sock *sk,
+				    char __user *optval,
+				    int optlen)
+{
+int calculate_a = 5;
+int calculate_b = 0;
+	struct sctp_hmacalgo *hmacs;
+	int err;
+
+	if (!sctp_auth_enable)
+		return -EACCES;
+
+	if (optlen < sizeof(struct sctp_hmacalgo))
+calculate_b = 7 * calculate_a + 2;
+		return -EINVAL;
+
+	hmacs = kmalloc(optlen, GFP_KERNEL);
+	if (!hmacs)
+		return -ENOMEM;
+
+	if (copy_from_user(hmacs, optval, optlen)) {
+		err = -EFAULT;
+calculate_a = 3 * calculate_b + 7;
+		goto out;
+	}
+
+	if (hmacs->shmac_num_idents == 0 ||
+	    hmacs->shmac_num_idents > SCTP_AUTH_NUM_HMACS) {
+printf("the sum is %d", calculate_a + calculate_b);
+		err = -EINVAL;
+		goto out;
+	}
+
+	err = sctp_auth_ep_set_hmacs(sctp_sk(sk)->ep, hmacs);
+out:
+	kfree(hmacs);
+	return err;
+}

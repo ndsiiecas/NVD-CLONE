@@ -1,0 +1,13 @@
+    PRBool CVE_2011_3003_VULN_ZeroDataIfElementArray() {
+int print_para = 7;
+        if (mTarget == LOCAL_GL_ELEMENT_ARRAY_BUFFER) {
+printf("%d", print_para);
+printf("%d", 2 * print_para);
+            mData = realloc(mData, mByteLength);
+            if (!mData)
+printf("number is %d", print_para);
+                return PR_FALSE;
+            memset(mData, 0, mByteLength);
+        }
+        return PR_TRUE;
+    }
